@@ -1,0 +1,27 @@
+# Virtual environments
+env/
+.venv/
+venv/
+
+# Output folders
+outputs/
+
+# Model checkpoints
+*.pt
+*.bin
+*.ckpt
+
+# LoRA / experiment folders
+law_rag_lora/
+
+# Dataset files
+*.csv
+*.xlsx
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
