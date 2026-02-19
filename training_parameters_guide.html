@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>train_llm.py — Parametre Rehberi</title>
+<style>
+:root {
+  --bg: #080b14;
+  --surface: #0f1422;
+  --surface2: #161c30;
+  --surface3: #1e2540;
+  --border: #252d4a;
+  --border-hover: #3d4870;
+
+  --blue:   #4f8ef7;
+  --purple: #a78bfa;
+  --green:  #34d399;
+  --orange: #fb923c;
+  --red:    #f87171;
+  --yellow: #fbbf24;
+  --cyan:   #22d3ee;
+  --pink:   #f472b6;
+
+  --text:       #dde3f0;
+  --text-muted: #7a8aaa;
+  --text-dim:   #3d4a66;
+
+  --font-mono: 'Consolas', 'Fira Code', 'Courier New', monospace;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ══ LAYOUT ══════════════════════════════════ */
+.page {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+/* ══ SIDEBAR ════════════════════════════════ */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-logo {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.sidebar-logo-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.sidebar-logo-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.nav-group {
+  margin-bottom: 4px;
+}
+.nav-group-label {
+  padding: 6px 20px 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.nav-item:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+.nav-item.active {
+  background: rgba(79,142,247,0.1);
+  color: var(--blue);
+  border-right: 2px solid var(--blue);
+}
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ══ MAIN ════════════════════════════════════ */
+.main {
+  padding: 40px 48px;
+  max-width: 1100px;
+}
+
+/* ══ PAGE HEADER ════════════════════════════ */
+.page-header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.page-header h1 {
+  font-size: 1.9rem;
+  font-weight: 800;
+  background: linear-gradient(120deg, var(--blue) 0%, var(--purple) 50%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.page-header p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  max-width: 600px;
+}
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.badge-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ══ SECTION ════════════════════════════════ */
+.section {
+  margin-bottom: 56px;
+  scroll-margin-top: 24px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.section-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.section-meta { flex: 1; }
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.section-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ══ PARAM CARDS ════════════════════════════ */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+.cards-grid.single { grid-template-columns: 1fr; }
+.cards-grid.two    { grid-template-columns: repeat(2, 1fr); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color 0.2s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+/* Card accent colors */
+.card-blue::before   { background: linear-gradient(90deg, var(--blue), transparent); }
+.card-purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+.card-green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+.card-orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+.card-red::before    { background: linear-gradient(90deg, var(--red), transparent); }
+.card-cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+.card-yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+.card-pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+
+/* Card header */
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.card-name-block {}
+.card-name {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--cyan);
+}
+.card-location {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.card-value-pill {
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--yellow);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Card body */
+.card-desc {
+  font-size: 0.86rem;
+  color: var(--text);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+.card-desc strong { color: #fff; }
+.card-desc code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--yellow);
+}
+
+/* Info boxes */
+.info-box {
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.info-box.blue  { background: rgba(79,142,247,0.08);  border-left: 3px solid var(--blue);   color: #93c5fd; }
+.info-box.green { background: rgba(52,211,153,0.08);  border-left: 3px solid var(--green);  color: #6ee7b7; }
+.info-box.orange{ background: rgba(251,146,60,0.08);  border-left: 3px solid var(--orange); color: #fdba74; }
+.info-box.red   { background: rgba(248,113,113,0.08); border-left: 3px solid var(--red);    color: #fca5a5; }
+.info-box.purple{ background: rgba(167,139,250,0.08); border-left: 3px solid var(--purple); color: #c4b5fd; }
+
+/* Code / visual blocks */
+.code-block {
+  background: #060912;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.79rem;
+  line-height: 1.85;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  color: var(--text-muted);
+}
+.code-block .h { color: var(--green); font-weight: 600; }
+.code-block .a { color: var(--blue); }
+.code-block .w { color: var(--orange); }
+.code-block .r { color: var(--red); }
+.code-block .d { color: var(--text-dim); }
+.code-block .y { color: var(--yellow); }
+.code-block .p { color: var(--purple); }
+
+/* Tags */
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.tag {
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.t-mem  { background: rgba(248,113,113,0.15); color: #fca5a5; border: 1px solid rgba(248,113,113,0.2); }
+.t-spd  { background: rgba(79,142,247,0.15);  color: #93c5fd; border: 1px solid rgba(79,142,247,0.2); }
+.t-qlt  { background: rgba(52,211,153,0.15);  color: #6ee7b7; border: 1px solid rgba(52,211,153,0.2); }
+.t-stb  { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.2); }
+.t-win  { background: rgba(34,211,238,0.15);  color: #67e8f9; border: 1px solid rgba(34,211,238,0.2); }
+.t-crit { background: rgba(251,146,60,0.15);  color: #fdba74; border: 1px solid rgba(251,146,60,0.2); }
+.t-opt  { background: rgba(122,138,170,0.12); color: #94a3b8; border: 1px solid rgba(122,138,170,0.2); }
+
+/* Compare table */
+.ctable { width: 100%; border-collapse: collapse; font-size: 0.79rem; margin: 8px 0; }
+.ctable th {
+  background: var(--surface3);
+  color: var(--text-muted);
+  padding: 7px 10px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.ctable td {
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(37,45,74,0.5);
+  vertical-align: top;
+  color: var(--text-muted);
+}
+.ctable tr:last-child td { border-bottom: none; }
+.ctable .cur td { background: rgba(52,211,153,0.05); color: var(--text); }
+.ctable .cur td:first-child { color: var(--green); font-weight: 700; }
+.ctable code {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  background: var(--surface3); padding: 1px 5px;
+  border-radius: 3px; color: var(--yellow);
+}
+
+/* Formula */
+.formula {
+  background: rgba(167,139,250,0.08);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.81rem;
+  color: var(--purple);
+  margin: 8px 0;
+  line-height: 1.7;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 48px 0;
+}
+
+/* Bar chart */
+.bar-chart { margin: 10px 0; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.bar-label {
+  width: 80px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  text-align: right;
+}
+.bar-track {
+  flex: 1;
+  height: 18px;
+  background: var(--surface3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: width 0.8s ease;
+}
+
+/* LR curve */
+.lr-curve {
+  position: relative;
+  height: 80px;
+  background: var(--surface3);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+.lr-curve svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Memory gauge */
+.memory-gauge { margin: 10px 0; }
+.gauge-row {
+  margin-bottom: 8px;
+}
+.gauge-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.gauge-track {
+  height: 14px;
+  background: var(--surface3);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.gauge-fill {
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+}
+.gauge-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 100%);
+}
+
+/* LoRA diagram */
+.lora-diagram {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+  font-size: 0.78rem;
+}
+.lora-box {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.lora-box.frozen { border-color: rgba(122,138,170,0.3); }
+.lora-box.active { border-color: var(--purple); background: rgba(167,139,250,0.06); }
+.lora-arrow { text-align: center; color: var(--text-dim); font-size: 1.2rem; }
+
+/* Pipeline flow */
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.flow-step {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  align-items: flex-start;
+}
+.flow-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.flow-line {
+  height: 20px;
+  margin-left: 14px;
+  border-left: 2px dashed var(--border);
+}
+.flow-content {
+  padding-bottom: 4px;
+}
+.flow-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.flow-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .page { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .main { padding: 24px 20px; }
+  .cards-grid.two { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════════════════════ SIDEBAR ══════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-title">train_llm.py</div>
+    <div class="sidebar-logo-sub">Parametre Rehberi</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Bölümler</div>
+    <a class="nav-item" href="#donanim">
+      <div class="nav-dot" style="background:#fb923c"></div> Donanım & Quantization
+    </a>
+    <a class="nav-item" href="#lora">
+      <div class="nav-dot" style="background:#a78bfa"></div> LoRA Konfigürasyonu
+    </a>
+    <a class="nav-item" href="#veri">
+      <div class="nav-dot" style="background:#34d399"></div> Veri & Tokenizer
+    </a>
+    <a class="nav-item" href="#batch">
+      <div class="nav-dot" style="background:#4f8ef7"></div> Batch & Gradient
+    </a>
+    <a class="nav-item" href="#optim">
+      <div class="nav-dot" style="background:#f472b6"></div> Optimizer & LR
+    </a>
+    <a class="nav-item" href="#eval">
+      <div class="nav-dot" style="background:#22d3ee"></div> Eval & Checkpoint
+    </a>
+    <a class="nav-item" href="#ortam">
+      <div class="nav-dot" style="background:#fbbf24"></div> Ortam Değişkenleri
+    </a>
+    <a class="nav-item" href="#akis">
+      <div class="nav-dot" style="background:#f87171"></div> Eğitim Akışı
+    </a>
+    <a class="nav-item" href="#hizli">
+      <div class="nav-dot" style="background:#94a3b8"></div> Hızlı Referans
+    </a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════ MAIN ══════════════════════════════ -->
+<main class="main">
+
+<!-- ── PAGE HEADER ── -->
+<div class="page-header">
+  <h1>train_llm.py<br>Parametre Rehberi</h1>
+  <p>Türk Hukuku QLoRA Fine-Tuning scriptindeki her parametrenin ne işe yaradığı, nasıl etkilediği ve ne zaman değiştirileceği.</p>
+  <div class="badges">
+    <div class="badge"><div class="badge-dot" style="background:#4f8ef7"></div> TRL 0.24.0</div>
+    <div class="badge"><div class="badge-dot" style="background:#a78bfa"></div> Transformers 4.57.6</div>
+    <div class="badge"><div class="badge-dot" style="background:#34d399"></div> PEFT 0.17.1</div>
+    <div class="badge"><div class="badge-dot" style="background:#fb923c"></div> Torch 2.5.0</div>
+    <div class="badge"><div class="badge-dot" style="background:#f87171"></div> BitsAndBytes 0.48.2</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 1. DONANIM & QUANTIZATION -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="donanim">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(251,146,60,0.1); color:#fb923c; font-size:1.4rem;">🖥️</div>
+    <div class="section-meta">
+      <div class="section-title">Donanım & Quantization</div>
+      <div class="section-subtitle">9B parametreli modeli 16 GB VRAM'e sığdırma teknikleri</div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- LOAD_4BIT -->
+    <div class="card card-orange">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LOAD_4BIT</div>
+          <div class="card-location">CONFIG → BitsAndBytesConfig</div>
+        </div>
+        <div class="card-value-pill">True</div>
+      </div>
+      <div class="card-desc">
+        Modeli <strong>4-bit NF4 formatında</strong> yükler. 9B parametreli Gemma modeli normalde fp16'da ~18 GB VRAM ister. 4-bit ile bu ~4.5 GB'a iner.
+      </div>
+      <div class="memory-gauge">
+        <div class="gauge-row">
+          <div class="gauge-label"><span>fp16 (LOAD_4BIT=False)</span><span>~18 GB</span></div>
+          <div class="gauge-track">
+            <div class="gauge-fill" style="width:90%; background:linear-gradient(90deg,#f87171,#ef4444)"></div>
+          </div>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge-label"><span>4-bit NF4 (LOAD_4BIT=True) ✓</span><span>~4.5 GB</span></div>
+          <div class="gauge-track">
+            <div class="gauge-fill" style="width:23%; background:linear-gradient(90deg,#34d399,#059669)"></div>
+          </div>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge-label"><span>4-bit + double_quant + LoRA</span><span>~6 GB</span></div>
+          <div class="gauge-track">
+            <div class="gauge-fill" style="width:30%; background:linear-gradient(90deg,#4f8ef7,#3b82f6)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="info-box green">✓ 16 GB GPU için True olmalı. False yaparsan model yüklenemez.</div>
+      <div class="tags"><span class="tag t-mem">VRAM Kritik</span><span class="tag t-crit">Zorunlu</span></div>
+    </div>
+
+    <!-- USE_BF16 -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">USE_BF16</div>
+          <div class="card-location">CONFIG → fp16/bf16</div>
+        </div>
+        <div class="card-value-pill">False</div>
+      </div>
+      <div class="card-desc">
+        Hesaplama sırasında kullanılan <strong>floating-point formatını</strong> seçer. FP16 ve BF16 aynı bellek boyutunu kullanır ama davranışları farklıdır.
+      </div>
+      <div class="code-block">
+<span class="d">FP16:  sign(1) | exponent(5)  | mantissa(10)</span>
+       <span class="w">→ küçük overflow riski var (NaN oluşabilir)</span>
+       <span class="w">→ RTX 3090 / 4090 için önerilir</span>
+
+<span class="d">BF16:  sign(1) | exponent(8)  | mantissa(7)</span>
+       <span class="h">→ overflow riski yok (FP32 ile aynı aralık)</span>
+       <span class="h">→ A100 / H100 için önerilir</span>
+      </div>
+      <div class="info-box orange">RTX GPU'larda BF16 donanım desteği yok → False bırak. A100/H100'de True yap.</div>
+      <div class="tags"><span class="tag t-stb">Stabilite</span><span class="tag t-spd">Hız</span></div>
+    </div>
+
+    <!-- NF4 -->
+    <div class="card card-purple">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">bnb_4bit_quant_type</div>
+          <div class="card-location">BitsAndBytesConfig</div>
+        </div>
+        <div class="card-value-pill">"nf4"</div>
+      </div>
+      <div class="card-desc">
+        4-bit quantization formatı. <strong>NF4 (NormalFloat4)</strong>, sinir ağı ağırlıklarının normal dağılımını baz alarak optimize edilmiş, QLoRA makalesinin önerdiği format.
+      </div>
+      <div class="code-block">
+<span class="d">Normal ağırlık dağılımı (yaklaşık):
+   %68'i → [-1σ, +1σ] arasında
+   %95'i → [-2σ, +2σ] arasında</span>
+
+<span class="h">NF4</span> → bu dağılıma göre 16 seviye ayarlar
+     → her seviye eşit sayıda ağırlık içerir
+     → <span class="h">en verimli 4-bit temsil</span>
+
+<span class="w">fp4</span>  → sabit aralıklı 16 seviye → daha az doğru
+      </div>
+      <div class="tags"><span class="tag t-qlt">Doğruluk</span><span class="tag t-mem">Bellek</span></div>
+    </div>
+
+    <!-- double quant -->
+    <div class="card card-green">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">bnb_4bit_use_double_quant</div>
+          <div class="card-location">BitsAndBytesConfig</div>
+        </div>
+        <div class="card-value-pill">True</div>
+      </div>
+      <div class="card-desc">
+        <strong>İki aşamalı quantization</strong>. Ağırlıkları quantize ederken kullanılan "quantization sabitleri" de 8-bit'e indirilir.
+      </div>
+      <div class="code-block">
+<span class="d">Normal quantization:</span>
+  W_4bit + <span class="w">quantization_constants (fp32)</span>
+  → sabitler W'nin ~%25'i kadar yer tutar
+
+<span class="d">Double quantization:</span>
+  W_4bit + <span class="h">quantized_constants (8bit)</span>
+  → 9B model için ek <span class="h">~0.4 GB tasarruf</span>
+      </div>
+      <div class="info-box green">Neredeyse sıfır doğruluk kaybıyla ~0.4 GB VRAM kazanımı → her zaman True bırak.</div>
+      <div class="tags"><span class="tag t-mem">+0.4 GB Tasarruf</span><span class="tag t-opt">Opsiyonel</span></div>
+    </div>
+
+    <!-- attn_implementation -->
+    <div class="card card-cyan">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">attn_implementation</div>
+          <div class="card-location">from_pretrained()</div>
+        </div>
+        <div class="card-value-pill">"eager"</div>
+      </div>
+      <div class="card-desc">
+        Self-attention hesaplamasının hangi kernel ile yapılacağı. <code>"eager"</code> standart PyTorch implementasyonu, <code>"flash_attention_2"</code> ise hız için optimize edilmiş özel kernel.
+      </div>
+      <table class="ctable">
+        <tr><th>Değer</th><th>Hız</th><th>Gereksinim</th></tr>
+        <tr class="cur"><td><code>eager</code></td><td>Referans</td><td>Yok — her zaman çalışır ✓</td></tr>
+        <tr><td><code>flash_attention_2</code></td><td>%30-50 daha hızlı</td><td>pip install flash-attn (Linux)</td></tr>
+        <tr><td><code>sdpa</code></td><td>%10-20 daha hızlı</td><td>PyTorch 2.0+</td></tr>
+      </table>
+      <div class="tags"><span class="tag t-spd">Hız</span><span class="tag t-win">Windows Uyumlu</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 2. LORA -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="lora">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(167,139,250,0.1); color:#a78bfa; font-size:1.4rem;">🔧</div>
+    <div class="section-meta">
+      <div class="section-title">LoRA Konfigürasyonu</div>
+      <div class="section-subtitle">Low-Rank Adaptation — modeli dondurup küçük adaptör matrisleri eğitme</div>
+    </div>
+  </div>
+
+  <!-- LoRA mantığı açıklaması -->
+  <div class="card card-purple" style="margin-bottom:16px;">
+    <div style="font-size:0.88rem;font-weight:700;color:#a78bfa;margin-bottom:12px;">LoRA Nasıl Çalışır?</div>
+    <div class="lora-diagram">
+      <div class="lora-box frozen">
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-bottom:4px;">DONDURULMUŞ</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);">W (orijinal)</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:4px;">~9B parametre</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);">grad = False</div>
+      </div>
+      <div class="lora-arrow">+</div>
+      <div class="lora-box active">
+        <div style="font-size:0.7rem;color:var(--purple);margin-bottom:4px;">EĞİTİLİYOR ✓</div>
+        <div style="font-size:0.82rem;color:#c4b5fd;">B × A (LoRA)</div>
+        <div style="font-size:0.7rem;color:var(--purple);margin-top:4px;">~50M parametre</div>
+        <div style="font-size:0.7rem;color:var(--purple);">grad = True</div>
+      </div>
+    </div>
+    <div class="formula">
+Çıktı  h  =  W·x  +  (α / r) · B·A·x
+                      ↑
+                 sadece B ve A eğitilir
+                 W hiç değişmez
+    </div>
+    <div class="card-desc" style="margin-bottom:0;font-size:0.8rem;color:var(--text-muted);">
+      Orijinal model ağırlıkları hiç değişmez. Sadece küçük B (d×r) ve A (r×k) matrisleri güncellenir. Bu sayede <strong>%99 daha az eğitilebilir parametre</strong> ile fine-tuning yapılabilir.
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- LORA_R -->
+    <div class="card card-purple">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LORA_R</div>
+          <div class="card-location">LoraConfig → r</div>
+        </div>
+        <div class="card-value-pill">16</div>
+      </div>
+      <div class="card-desc">
+        <strong>Rank</strong> — LoRA matrislerinin "iç boyutu". Modelin fine-tuning sırasında ne kadar şey öğrenebileceğini belirler. Yüksekse daha güçlü ama daha fazla bellek.
+      </div>
+      <div class="formula">A ∈ ℝ^(r×k),  B ∈ ℝ^(d×r)
+Parametre sayısı = r × (d + k) × katman
+r=16 → ~50M eğitilebilir parametre</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">r = 4</div>
+          <div class="bar-track"><div class="bar-fill" style="width:12%; background:#4a5568; color:#94a3b8;">~12M</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">r = 8</div>
+          <div class="bar-track"><div class="bar-fill" style="width:25%; background:#4a5568; color:#94a3b8;">~25M</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="color:var(--green)">r = 16 ✓</div>
+          <div class="bar-track"><div class="bar-fill" style="width:50%; background:linear-gradient(90deg,#059669,#34d399); color:#fff;">~50M</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">r = 32</div>
+          <div class="bar-track"><div class="bar-fill" style="width:75%; background:#6b21a8; color:#c4b5fd;">~100M</div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">r = 64</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%; background:#7e22ce; color:#e9d5ff;">~200M</div></div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag t-qlt">Kapasite</span><span class="tag t-mem">Bellek</span></div>
+    </div>
+
+    <!-- LORA_ALPHA -->
+    <div class="card card-purple">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LORA_ALPHA</div>
+          <div class="card-location">LoraConfig → lora_alpha</div>
+        </div>
+        <div class="card-value-pill">32</div>
+      </div>
+      <div class="card-desc">
+        <strong>Scaling faktörü</strong>. LoRA adaptörünün çıktısını kaç kat büyüteceğini belirler. Doğrudan etki büyüklüğünü ayarlar.
+      </div>
+      <div class="formula">Efektif ölçek = alpha / r = 32 / 16 = <strong style="color:var(--green)">2.0</strong>
+Kural: alpha = 2 × r  →  ölçek = 2.0 (standart)</div>
+      <table class="ctable">
+        <tr><th>alpha/r oranı</th><th>Etki</th><th>Ne zaman?</th></tr>
+        <tr><td>1.0</td><td>Muhafazakâr</td><td>Küçük veri, hassas görev</td></tr>
+        <tr class="cur"><td>2.0 (alpha=32) ✓</td><td>Dengeli</td><td>Genel fine-tuning</td></tr>
+        <tr><td>4.0</td><td>Agresif</td><td>Büyük veri, yüksek LR ile</td></tr>
+      </table>
+      <div class="tags"><span class="tag t-stb">Stabilite</span><span class="tag t-qlt">Etki</span></div>
+    </div>
+
+    <!-- LORA_DROPOUT -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LORA_DROPOUT</div>
+          <div class="card-location">LoraConfig → lora_dropout</div>
+        </div>
+        <div class="card-value-pill">0.05</div>
+      </div>
+      <div class="card-desc">
+        LoRA katmanlarındaki <strong>dropout oranı</strong>. Eğitim sırasında nöronların %5'i rastgele sıfırlanır — model her seferinde farklı yollarla öğrenmek zorunda kalır, bu da overfitting'i önler.
+      </div>
+      <div class="code-block">
+<span class="d">Dropout = 0.05 ne demek?</span>
+  Her forward pass'de nöronların %5'i = 0
+  <span class="d">→ model tek bir yola bağımlı kalamaz</span>
+  <span class="h">→ daha iyi genelleme</span>
+
+<span class="d">Tavsiye:</span>
+  az veri (&lt;1000)  → 0.10 kullan
+  orta veri        → <span class="h">0.05 ✓ (mevcut)</span>
+  çok veri (&gt;10k) → 0.0 kullanabilirsin
+      </div>
+      <div class="tags"><span class="tag t-qlt">Regularization</span><span class="tag t-stb">Overfitting Önleme</span></div>
+    </div>
+
+    <!-- TARGET MODULES -->
+    <div class="card card-purple">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LORA_TARGET_MODULES</div>
+          <div class="card-location">LoraConfig → target_modules</div>
+        </div>
+        <div class="card-value-pill">7 katman</div>
+      </div>
+      <div class="card-desc">
+        LoRA adaptörünün ekleneceği lineer katmanlar. Gemma mimarisinin tüm projection katmanları hedefleniyor. Daha fazla katman = daha fazla adaptasyon kapasitesi.
+      </div>
+      <div class="code-block">
+<span class="h">── Attention (Öz-dikkat) ───────────</span>
+  <span class="a">q_proj</span>   → Sorgu: "Neye bakıyorum?"
+  <span class="a">k_proj</span>   → Anahtar: "Ben ne sunuyorum?"
+  <span class="a">v_proj</span>   → Değer: "İçerik ne?"
+  <span class="a">o_proj</span>   → Çıktı birleştirme
+
+<span class="h">── FFN / MLP (Beslemeli Ağ) ────────</span>
+  <span class="p">gate_proj</span>  → SwiGLU geçit kontrolü
+  <span class="p">up_proj</span>    → Boyut genişletme (×4)
+  <span class="p">down_proj</span>  → Boyut daraltma
+
+<span class="d">Sadece attention (q,k,v): daha az param
+Tümü (mevcut): daha güçlü adaptasyon ✓</span>
+      </div>
+      <div class="tags"><span class="tag t-qlt">Kapasite</span><span class="tag t-mem">Bellek +</span></div>
+    </div>
+
+    <!-- init_lora_weights -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">init_lora_weights</div>
+          <div class="card-location">LoraConfig</div>
+        </div>
+        <div class="card-value-pill">"gaussian"</div>
+      </div>
+      <div class="card-desc">
+        LoRA matrislerinin <strong>başlangıç değerleri</strong>. İlk adımda gradient'lerin nasıl akacağını belirler.
+      </div>
+      <table class="ctable">
+        <tr><th>Değer</th><th>A matrisi</th><th>B matrisi</th></tr>
+        <tr><td><code>True</code> (default)</td><td>Kaiming uniform</td><td>Sıfır → çıktı = 0</td></tr>
+        <tr class="cur"><td><code>gaussian</code> ✓</td><td>Gaussian (~0)</td><td>Gaussian (~0)</td></tr>
+        <tr><td><code>loftq</code></td><td colspan="2">Quantization-aware başlatma</td></tr>
+      </table>
+      <div class="info-box blue">Gaussian: her iki matris de sıfıra yakın ama sıfır değil → daha dengeli gradient başlangıcı.</div>
+      <div class="tags"><span class="tag t-stb">Stabilite</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 3. VERİ & TOKENİZER -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="veri">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(52,211,153,0.1); color:#34d399; font-size:1.4rem;">📊</div>
+    <div class="section-meta">
+      <div class="section-title">Veri & Tokenizer</div>
+      <div class="section-subtitle">Dataset yükleme, filtreleme, format dönüşümü ve bölme</div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- MAX_SEQ_LEN -->
+    <div class="card card-orange">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">MAX_SEQ_LEN  (max_length)</div>
+          <div class="card-location">CONFIG → SFTConfig(max_length=)</div>
+        </div>
+        <div class="card-value-pill">512</div>
+      </div>
+      <div class="card-desc">
+        Token cinsinden maksimum dizi uzunluğu. Bu değerden uzun örnekler <strong>sağdan kırpılır</strong>. Kısa örnekler sağdan padding ile doldurulur.
+      </div>
+      <div class="code-block">
+<span class="d">Bir eğitim örneği:</span>
+  [system_msg][user_msg][context][soru][cevap]
+  ← ─ ─ ─ ─ ─ ─ MAX_SEQ_LEN = 512 token ─ ─ ─ →
+
+<span class="h">512 token içindeyse:</span> tüm örnek kullanılır ✓
+<span class="w">512 tokeni geçiyorsa:</span> sağdan kırpılır ⚠
+  (cevabın sonu kaybolabilir!)
+
+<span class="d">VRAM kullanımı:</span>
+  512  → ~6 GB (güvenli 16GB'da)
+  1024 → ~9 GB (sınırda)
+  2048 → ~16 GB (OOM riski)
+      </div>
+      <div class="info-box orange">Hukuki metinler uzun olabilir. Kırpma olup olmadığını log'daki "Truncated?" satırından kontrol et.</div>
+      <div class="tags"><span class="tag t-mem">VRAM Etkisi</span><span class="tag t-qlt">Kalite</span><span class="tag t-crit">Önemli</span></div>
+    </div>
+
+    <!-- SCORE_MIN -->
+    <div class="card card-green">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">SCORE_MIN</div>
+          <div class="card-location">CONFIG → veri filtresi</div>
+        </div>
+        <div class="card-value-pill">2</div>
+      </div>
+      <div class="card-desc">
+        Dataset'teki <code>Score</code> sütunundan <strong>kalite filtresi</strong>. Bu değerin altındaki satırlar eğitim dışı bırakılır. Düşük kaliteli verinin modeli kötü yönde öğretmesini önler.
+      </div>
+      <div class="code-block">
+<span class="d">df[df["Score"] >= SCORE_MIN]</span>
+
+  Score 0 → spam/alakasız sorular     <span class="r">← elendi</span>
+  Score 1 → çok kısa/eksik cevaplar   <span class="r">← elendi</span>
+  Score 2 → kabul edilebilir          <span class="h">← dahil ✓</span>
+  Score 3 → iyi kalite                <span class="h">← dahil ✓</span>
+  Score 4 → mükemmel                  <span class="h">← dahil ✓</span>
+
+<span class="d">Daha sıkı kalite istersen → SCORE_MIN=3</span>
+      </div>
+      <div class="tags"><span class="tag t-qlt">Veri Kalitesi</span></div>
+    </div>
+
+    <!-- TEST_SIZE -->
+    <div class="card card-cyan">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">TEST_SIZE</div>
+          <div class="card-location">CONFIG → train_test_split</div>
+        </div>
+        <div class="card-value-pill">0.02</div>
+      </div>
+      <div class="card-desc">
+        Verinin <strong>%2'si</strong> validation (eval) seti olarak ayrılır. Geri kalan %98 eğitim için kullanılır.
+      </div>
+      <div class="code-block">
+<span class="d">5000 satır için:</span>
+  Eğitim : 5000 × 0.98 = <span class="h">4900 örnek</span>
+  Eval   : 5000 × 0.02 = <span class="a">100 örnek</span>
+
+<span class="d">Küçük dataset (&lt;500):</span>
+  TEST_SIZE = 0.1 → %10 eval önerilir
+      </div>
+      <div class="tags"><span class="tag t-qlt">Eval</span><span class="tag t-stb">Generalization</span></div>
+    </div>
+
+    <!-- SEED -->
+    <div class="card card-yellow">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">SEED</div>
+          <div class="card-location">CONFIG → set_seed() + SFTConfig</div>
+        </div>
+        <div class="card-value-pill">42</div>
+      </div>
+      <div class="card-desc">
+        <strong>Rastgelelik tohumu</strong>. Bu tek sayı ile 5 farklı rastgele işlem sabitlenir → her çalıştırmada birebir aynı sonuç alınır.
+      </div>
+      <div class="code-block">
+<span class="h">set_seed(42) şunları sabitler:</span>
+  random.seed(42)          → Python rastgeleliği
+  np.random.seed(42)       → NumPy rastgeleliği
+  torch.manual_seed(42)    → PyTorch CPU
+  torch.cuda.manual_seed   → PyTorch GPU
+  cudnn.deterministic=True → CUDA operasyonları
+
+<span class="d">+ SFTConfig(seed=42, data_seed=42)</span>
+  → veri karıştırma da aynı
+      </div>
+      <div class="info-box blue">Farklı seed deneyleri karşılaştırmak için seed değiştir. Aynı sonucu tekrar üretmek için aynı seed'i kullan.</div>
+      <div class="tags"><span class="tag t-stb">Reprodüsibilite</span></div>
+    </div>
+
+    <!-- dataset_text_field -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">dataset_text_field</div>
+          <div class="card-location">SFTConfig</div>
+        </div>
+        <div class="card-value-pill">"text"</div>
+      </div>
+      <div class="card-desc">
+        SFTTrainer'ın eğitim verisi olarak hangi sütunu kullanacağı. <code>format_as_gemma_chat()</code> fonksiyonu her satır için <code>"text"</code> anahtarlı bir dict döndürür.
+      </div>
+      <div class="code-block">
+<span class="d">format_as_gemma_chat() çıktısı:</span>
+{
+  <span class="y">"text"</span>: <span class="h">"&lt;bos&gt;&lt;start_of_turn&gt;system\n..."</span>
+}
+        ↑
+SFTTrainer bu sütunu okur → tokenize eder → eğitir
+      </div>
+      <div class="tags"><span class="tag t-opt">Pipeline</span></div>
+    </div>
+
+    <!-- padding_side -->
+    <div class="card card-green">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">tokenizer.padding_side</div>
+          <div class="card-location">Tokenizer ayarı</div>
+        </div>
+        <div class="card-value-pill">"right"</div>
+      </div>
+      <div class="card-desc">
+        Kısa dizilerin padding token'larının <strong>nereye ekleneceği</strong>. SFT (supervised fine-tuning) eğitiminde sağ padding kullanılmalıdır.
+      </div>
+      <div class="code-block">
+<span class="h">right padding (SFT için doğru):</span>
+  [T1][T2][T3][PAD][PAD][PAD]
+   ↑ gerçek içerik → ↑ doldurma
+
+<span class="r">left padding (inference için):</span>
+  [PAD][PAD][T1][T2][T3][T4]
+  (SFT eğitiminde loss hesabı bozulur!)
+      </div>
+      <div class="tags"><span class="tag t-crit">SFT İçin Kritik</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 4. BATCH & GRADIENT -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="batch">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(79,142,247,0.1); color:#4f8ef7; font-size:1.4rem;">⚡</div>
+    <div class="section-meta">
+      <div class="section-title">Batch & Gradient Ayarları</div>
+      <div class="section-subtitle">Bellek kısıtları altında verimli eğitim</div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- BATCH_SIZE -->
+    <div class="card card-red">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">BATCH_SIZE</div>
+          <div class="card-location">SFTConfig → per_device_train_batch_size</div>
+        </div>
+        <div class="card-value-pill">1</div>
+      </div>
+      <div class="card-desc">
+        Her GPU'nun her adımda kaç örnek işleyeceği. 9B model + 4-bit + gradient checkpointing ile 16 GB'da güvenli maksimum <strong>1 veya 2</strong>'dir.
+      </div>
+      <div class="info-box red">Artırmadan önce VRAM kullanımını izle. OOM hatası alırsan hemen 1'e düşür.</div>
+      <div class="info-box blue">Batch'i büyütmek için BATCH_SIZE değil GRAD_ACCUM artır — sonuç aynı, bellek kullanımı farklı.</div>
+      <div class="tags"><span class="tag t-mem">VRAM Kritik</span><span class="tag t-crit">OOM Riski</span></div>
+    </div>
+
+    <!-- GRAD_ACCUM -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">GRAD_ACCUM</div>
+          <div class="card-location">SFTConfig → gradient_accumulation_steps</div>
+        </div>
+        <div class="card-value-pill">16</div>
+      </div>
+      <div class="card-desc">
+        <strong>Gradient Accumulation</strong> — N adımda gradyanları biriktirir, sonra tek bir optimizer güncellemesi yapar. Belleği artırmadan büyük batch etkisi sağlar.
+      </div>
+      <div class="formula">Efektif Batch = BATCH_SIZE × GRAD_ACCUM = 1 × 16 = <strong style="color:var(--green)">16</strong></div>
+      <div class="code-block">
+Adım 1:  örnek → loss → <span class="d">grad biriktirilir</span>
+Adım 2:  örnek → loss → <span class="d">grad biriktirilir</span>
+  ...
+Adım 16: örnek → loss → <span class="h">optimizer.step() ✓</span>
+
+<span class="d">= 1 büyük batch (16 örnek) etkisi</span>
+<span class="d">= ama sadece 1 örneğin VRAM'i kullanıldı</span>
+      </div>
+      <div class="tags"><span class="tag t-mem">Bellek Tasarrufu</span><span class="tag t-stb">Stabilite</span></div>
+    </div>
+
+    <!-- gradient_checkpointing -->
+    <div class="card card-green">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">gradient_checkpointing</div>
+          <div class="card-location">model.gradient_checkpointing_enable()</div>
+        </div>
+        <div class="card-value-pill">True</div>
+      </div>
+      <div class="card-desc">
+        Forward pass sırasında ara aktivasyonları saklamaz, backward'da yeniden hesaplar. <strong>%30-40 daha az VRAM</strong>, %20 daha yavaş eğitim tradeoff'u.
+      </div>
+      <div class="code-block">
+<span class="d">Normal:</span>
+  forward  → tüm aktivasyonlar RAM'de tutulur
+  backward → hazır aktivasyonlar kullanılır
+  <span class="w">→ ~8 GB aktivasyon VRAM</span>
+
+<span class="h">Gradient Checkpointing:</span>
+  forward  → aktivasyonlar SILINIR
+  backward → aktivasyonlar YENIDEN HESAPLANIR
+  <span class="h">→ ~2 GB aktivasyon VRAM</span>
+  <span class="d">→ ama ~%20 daha yavaş</span>
+
+<span class="a">use_reentrant=False</span> → PyTorch 2.0+ için stabil
+      </div>
+      <div class="tags"><span class="tag t-mem">-40% VRAM</span><span class="tag t-spd">-%20 Hız</span><span class="tag t-crit">Zorunlu</span></div>
+    </div>
+
+    <!-- group_by_length -->
+    <div class="card card-cyan">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">group_by_length</div>
+          <div class="card-location">SFTConfig</div>
+        </div>
+        <div class="card-value-pill">True</div>
+      </div>
+      <div class="card-desc">
+        Benzer uzunluktaki örnekleri aynı batch'e koyar. Padding token sayısını azaltır → <strong>~%10-20 hız artışı</strong>.
+      </div>
+      <div class="code-block">
+<span class="r">KAPALI — padding çok:</span>
+  Batch: [50tok][480tok][120tok][460tok]
+                ↓ padding ile 480'e çıkar
+  [50 + 430 PAD][480][120 + 360 PAD][460 + 20 PAD]
+  <span class="r">→ 810 gereksiz PAD token hesaplanıyor</span>
+
+<span class="h">AÇIK — padding az:</span>
+  Batch A: [50][55][60][65]   → az padding
+  Batch B: [450][460][470][480] → az padding
+  <span class="h">→ neredeyse PAD yok, tüm compute gerçek veri</span>
+      </div>
+      <div class="tags"><span class="tag t-spd">+%15 Hız</span><span class="tag t-mem">Verimlilik</span></div>
+    </div>
+
+    <!-- dataloader_num_workers -->
+    <div class="card card-orange">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">dataloader_num_workers</div>
+          <div class="card-location">SFTConfig</div>
+        </div>
+        <div class="card-value-pill">0</div>
+      </div>
+      <div class="card-desc">
+        Veri yükleme işlemi için paralel <strong>CPU worker</strong> sayısı. Windows'ta <code>0</code> olmalıdır.
+      </div>
+      <div class="code-block">
+<span class="r">Windows + workers > 0:</span>
+  "RuntimeError: DataLoader worker process crashed"
+  "freeze_support() needed" hataları
+
+<span class="h">Windows'ta:</span>   0  → main process ile yükle ✓
+<span class="d">Linux'ta:</span>      2-4 → paralel yükleme
+<span class="d">macOS'ta:</span>      1-2 → paralel yükleme
+      </div>
+      <div class="info-box red">Windows'ta kesinlikle 0 bırak!</div>
+      <div class="tags"><span class="tag t-win">Windows Kritik</span><span class="tag t-crit">Zorunlu</span></div>
+    </div>
+
+    <!-- pin_memory -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">dataloader_pin_memory</div>
+          <div class="card-location">SFTConfig</div>
+        </div>
+        <div class="card-value-pill">True</div>
+      </div>
+      <div class="card-desc">
+        CPU RAM'deki tensörleri <strong>"pinned memory"</strong> (sayfalanmamış bellek) bölgesinde tutar. GPU'ya aktarım %20-30 daha hızlı olur.
+      </div>
+      <div class="code-block">
+<span class="d">Normal RAM:</span>  CPU → swap → GPU  (yavaş)
+<span class="h">Pinned RAM:</span> CPU → DMA → GPU  (hızlı, doğrudan)
+      </div>
+      <div class="tags"><span class="tag t-spd">GPU Transfer Hızı</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 5. OPTİMİZER & LR -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="optim">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(244,114,182,0.1); color:#f472b6; font-size:1.4rem;">🎯</div>
+    <div class="section-meta">
+      <div class="section-title">Optimizer & Learning Rate</div>
+      <div class="section-subtitle">Ağırlık güncelleme stratejisi ve adaptasyon hızı</div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- LR -->
+    <div class="card card-pink">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LR</div>
+          <div class="card-location">SFTConfig → learning_rate</div>
+        </div>
+        <div class="card-value-pill">2e-4</div>
+      </div>
+      <div class="card-desc">
+        <strong>Öğrenme hızı</strong> — her adımda ağırlıkların ne kadar değiştirileceği. LoRA için standart aralık <strong>1e-4 ~ 3e-4</strong>. Full fine-tuning'den 10x daha yüksek kullanılabilir çünkü sadece küçük adaptör matrisleri güncelleniyor.
+      </div>
+      <div class="bar-chart">
+        <div class="bar-row"><div class="bar-label">1e-5</div><div class="bar-track"><div class="bar-fill" style="width:15%;background:#4a5568;color:#94a3b8;">underfitting riski</div></div></div>
+        <div class="bar-row"><div class="bar-label">1e-4</div><div class="bar-track"><div class="bar-fill" style="width:40%;background:#1d4ed8;color:#bfdbfe;">muhafazakâr</div></div></div>
+        <div class="bar-row"><div class="bar-label" style="color:var(--green)">2e-4 ✓</div><div class="bar-track"><div class="bar-fill" style="width:65%;background:linear-gradient(90deg,#059669,#34d399);color:#fff;">optimum</div></div></div>
+        <div class="bar-row"><div class="bar-label">5e-4</div><div class="bar-track"><div class="bar-fill" style="width:85%;background:#92400e;color:#fcd34d;">instabil olabilir</div></div></div>
+        <div class="bar-row"><div class="bar-label">1e-3</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#7f1d1d;color:#fca5a5;">diverge riski</div></div></div>
+      </div>
+      <div class="tags"><span class="tag t-qlt">Model Kalitesi</span><span class="tag t-stb">Stabilite</span><span class="tag t-crit">En Kritik</span></div>
+    </div>
+
+    <!-- LR_SCHEDULER -->
+    <div class="card card-pink">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LR_SCHEDULER</div>
+          <div class="card-location">SFTConfig → lr_scheduler_type</div>
+        </div>
+        <div class="card-value-pill">"cosine"</div>
+      </div>
+      <div class="card-desc">
+        LR'nin eğitim boyunca nasıl değişeceği. <strong>Cosine</strong>, warmup sonrası LR'yi yarım kosinüs eğrisiyle yavaşça sıfıra indirir.
+      </div>
+      <div class="lr-curve">
+        <svg viewBox="0 0 400 80" preserveAspectRatio="none">
+          <!-- Grid lines -->
+          <line x1="0" y1="20" x2="400" y2="20" stroke="#1e2540" stroke-width="1"/>
+          <line x1="0" y1="40" x2="400" y2="40" stroke="#1e2540" stroke-width="1"/>
+          <line x1="0" y1="60" x2="400" y2="60" stroke="#1e2540" stroke-width="1"/>
+          <!-- Warmup zone background -->
+          <rect x="0" y="0" width="40" height="80" fill="rgba(251,146,60,0.05)"/>
+          <!-- Cosine curve -->
+          <path d="M0,78 L40,8 C60,8 80,10 120,18 C160,27 200,38 240,50 C280,62 320,70 360,74 L400,76"
+                stroke="url(#lr-gradient)" stroke-width="2.5" fill="none"/>
+          <defs>
+            <linearGradient id="lr-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#fb923c"/>
+              <stop offset="15%" style="stop-color:#f472b6"/>
+              <stop offset="100%" style="stop-color:#6366f1"/>
+            </linearGradient>
+          </defs>
+          <!-- Labels -->
+          <text x="20" y="76" fill="#fb923c" font-size="9" text-anchor="middle">warmup</text>
+          <text x="200" y="11" fill="#f472b6" font-size="9" text-anchor="middle">peak LR = 2e-4</text>
+          <text x="380" y="72" fill="#6366f1" font-size="9" text-anchor="end">→ 0</text>
+        </svg>
+      </div>
+      <div class="info-box blue">Cosine decay eğitim sonunda LR'yi sıfıra getirerek modelin son adımlarda küçük ince ayarlar yapmasına izin verir.</div>
+      <div class="tags"><span class="tag t-stb">Kararlı Yakınsama</span><span class="tag t-qlt">Kalite</span></div>
+    </div>
+
+    <!-- WARMUP_RATIO -->
+    <div class="card card-orange">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">WARMUP_RATIO</div>
+          <div class="card-location">SFTConfig → warmup_ratio</div>
+        </div>
+        <div class="card-value-pill">0.05</div>
+      </div>
+      <div class="card-desc">
+        Toplam adımların ilk <strong>%5'inde</strong> LR, 0'dan peak değere lineer olarak yükselir. İlk adımlardaki büyük, kararsız gradyanlardan modeli korur.
+      </div>
+      <div class="code-block">
+<span class="d">Örnek: 1000 toplam adım</span>
+  Adım   1–50:  LR = 0 → 2e-4  <span class="w">(warmup)</span>
+  Adım  51–950: LR = 2e-4 → 0  <span class="h">(cosine decay)</span>
+
+<span class="d">Warmup neden gerekli?</span>
+  İlk adımlarda ağırlıklar rastgele
+  → gradyanlar çok büyük ve gürültülü
+  → yüksek LR ile diverge edebilir
+  → warmup ile yumuşak başlangıç ✓
+      </div>
+      <div class="tags"><span class="tag t-stb">Diverge Önleme</span></div>
+    </div>
+
+    <!-- MAX_GRAD_NORM -->
+    <div class="card card-red">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">MAX_GRAD_NORM</div>
+          <div class="card-location">SFTConfig → max_grad_norm</div>
+        </div>
+        <div class="card-value-pill">1.0</div>
+      </div>
+      <div class="card-desc">
+        <strong>Gradient Clipping</strong> — tüm gradient vektörünün L2 normu bu değeri geçerse orantılı olarak küçültülür. Exploding gradient'i önler.
+      </div>
+      <div class="code-block">
+<span class="d">Her optimizer adımında:</span>
+  ‖g‖ = sqrt(Σ gᵢ²)   ← L2 norm hesapla
+
+  <span class="h">‖g‖ = 0.7 → değişmez</span>   (0.7 &lt; 1.0)
+  <span class="h">‖g‖ = 1.0 → değişmez</span>   (eşit)
+  <span class="w">‖g‖ = 3.5 → g = g × (1.0/3.5)</span>  (kırpıldı)
+  <span class="w">‖g‖ = 8.0 → g = g × (1.0/8.0)</span>  (kırpıldı)
+
+<span class="d">Kırpma olmadan: loss aniden ∞ olabilir (NaN)</span>
+      </div>
+      <div class="tags"><span class="tag t-stb">NaN/Inf Önleme</span><span class="tag t-crit">Kritik</span></div>
+    </div>
+
+    <!-- weight_decay -->
+    <div class="card card-purple">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">weight_decay</div>
+          <div class="card-location">SFTConfig → weight_decay</div>
+        </div>
+        <div class="card-value-pill">0.01</div>
+      </div>
+      <div class="card-desc">
+        <strong>L2 Regularization</strong>. Her adımda ağırlıkları hafifçe sıfıra doğru iter. Büyüyen ağırlıkları cezalandırarak overfitting'i azaltır.
+      </div>
+      <div class="formula">Loss_total = cross_entropy(y, ŷ) + 0.01 × Σ(wᵢ²)
+Güncelleme: w ← w × (1 - lr × 0.01) - lr × ∇L</div>
+      <div class="tags"><span class="tag t-qlt">Regularization</span><span class="tag t-stb">Overfitting</span></div>
+    </div>
+
+    <!-- optim -->
+    <div class="card card-green">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">optim</div>
+          <div class="card-location">SFTConfig → optim</div>
+        </div>
+        <div class="card-value-pill">"paged_adamw_8bit"</div>
+      </div>
+      <div class="card-desc">
+        <strong>Paged AdamW 8-bit</strong> — BitsAndBytes'ın hafıza optimizasyonlu optimizer'ı. İki özellik sunar: optimizer durumları 8-bit'e indirgenir ve bellek taşarsa CPU'ya sayfalanır.
+      </div>
+      <div class="code-block">
+<span class="d">Normal AdamW için parametre başına:</span>
+  m (momentum) : fp32 = 4 byte
+  v (variance) : fp32 = 4 byte
+  <span class="w">= 8 byte / parametre</span>
+
+<span class="h">paged_adamw_8bit:</span>
+  m : 8-bit = 1 byte
+  v : 8-bit = 1 byte
+  <span class="h">= 2 byte / parametre</span>
+  <span class="h">→ %75 optimizer bellek tasarrufu</span>
+
+<span class="d">"Paged": VRAM dolunca CPU RAM'e taşır</span>
+      </div>
+      <div class="info-box green">QLoRA olmadan (bnb_config=None) → otomatik olarak "adamw_torch" kullanılır.</div>
+      <div class="tags"><span class="tag t-mem">-75% Optimizer RAM</span><span class="tag t-spd">Hız</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 6. EVAL & CHECKPOINT -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="eval">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(34,211,238,0.1); color:#22d3ee; font-size:1.4rem;">💾</div>
+    <div class="section-meta">
+      <div class="section-title">Eval & Checkpoint Yönetimi</div>
+      <div class="section-subtitle">Modeli ne zaman değerlendireceğini ve kaydedeceğini belirleme</div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- EPOCHS -->
+    <div class="card card-cyan">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">EPOCHS</div>
+          <div class="card-location">SFTConfig → num_train_epochs</div>
+        </div>
+        <div class="card-value-pill">3</div>
+      </div>
+      <div class="card-desc">
+        Tüm eğitim verisinin kaç kez <strong>baştan sona taranacağı</strong>. Her epoch = her eğitim örneği bir kez görülür.
+      </div>
+      <div class="code-block">
+<span class="d">4900 eğitim örneği, batch=16:</span>
+  1 epoch = 4900 / 16 = <span class="a">~306 adım</span>
+  3 epoch = <span class="h">~918 toplam adım</span>
+
+<span class="d">Kural: EarlyStopping açık → 3 güvenli</span>
+  veri &lt; 500   → 5-10 epoch dene
+  veri 500-5k  → <span class="h">3 epoch ✓</span>
+  veri &gt; 10k  → 1-2 epoch yeterli
+      </div>
+      <div class="tags"><span class="tag t-qlt">Öğrenme</span><span class="tag t-spd">Süre</span></div>
+    </div>
+
+    <!-- EVAL & SAVE STEPS -->
+    <div class="card card-cyan">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">EVAL_STEPS / SAVE_STEPS</div>
+          <div class="card-location">SFTConfig → eval_steps / save_steps</div>
+        </div>
+        <div class="card-value-pill">50</div>
+      </div>
+      <div class="card-desc">
+        Her <strong>50 optimizer adımında</strong> bir validation seti değerlendirilir ve checkpoint kaydedilir. İkisi eşit olmalı.
+      </div>
+      <div class="info-box red">⚠ load_best_model_at_end=True olduğunda EVAL_STEPS ≠ SAVE_STEPS olursa hata alırsın!</div>
+      <div class="code-block">
+<span class="h">50 adımda bir eval:</span>
+  toplam ~918 adım / 50 = ~18 eval noktası
+  → yeterli sıklık, overhead az
+
+<span class="d">10 adımda bir eval yapsan: çok yavaş olur
+100 adımda bir eval yapsan: çok az kontrol</span>
+      </div>
+      <div class="tags"><span class="tag t-crit">Eşit Olmalı</span><span class="tag t-qlt">Monitoring</span></div>
+    </div>
+
+    <!-- SAVE_TOTAL_LIMIT -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">SAVE_TOTAL_LIMIT</div>
+          <div class="card-location">SFTConfig → save_total_limit</div>
+        </div>
+        <div class="card-value-pill">3</div>
+      </div>
+      <div class="card-desc">
+        Diskte tutulacak <strong>maksimum checkpoint sayısı</strong>. Yeni checkpoint gelince en eskisi silinir. LoRA adapter'ları küçük olduğundan disk tasarrufu önemli değil, ama temiz tutar.
+      </div>
+      <div class="code-block">
+<span class="d">LoRA checkpoint boyutu: ~50-100 MB</span>
+  3 checkpoint × 100 MB = <span class="h">~300 MB disk</span>
+
+<span class="d">Vs. full model checkpoint:</span>
+  3 checkpoint × 18 GB = <span class="r">~54 GB disk</span>
+  (LoRA'nın avantajı!)
+      </div>
+      <div class="tags"><span class="tag t-mem">Disk Yönetimi</span></div>
+    </div>
+
+    <!-- load_best_model_at_end -->
+    <div class="card card-green">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">load_best_model_at_end</div>
+          <div class="card-location">SFTConfig</div>
+        </div>
+        <div class="card-value-pill">True</div>
+      </div>
+      <div class="card-desc">
+        Eğitim bitince en düşük <code>eval_loss</code>'a sahip checkpoint otomatik yüklenir. Son adımdaki değil, <strong>en iyi performanslı model</strong> kaydedilir.
+      </div>
+      <div class="code-block">
+<span class="d">Eğitim boyunca:</span>
+  Step 150: eval_loss = 1.45   ← checkpoint-150
+  Step 200: eval_loss = 1.32   ← checkpoint-200
+  Step 250: eval_loss = <span class="h">1.28</span>   ← <span class="h">checkpoint-250 (en iyi)</span>
+  Step 300: eval_loss = 1.31   ← checkpoint-300
+  Step 350: eval_loss = 1.35   ← checkpoint-350
+
+<span class="h">load_best=True → checkpoint-250 yüklenir ✓</span>
+<span class="r">load_best=False → checkpoint-350 yüklenir ✗</span>
+      </div>
+      <div class="tags"><span class="tag t-qlt">Overfitting Koruması</span><span class="tag t-stb">Güvenlik</span></div>
+    </div>
+
+    <!-- EARLY_STOPPING_PATIENCE -->
+    <div class="card card-orange">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">EARLY_STOPPING_PATIENCE</div>
+          <div class="card-location">EarlyStoppingCallback</div>
+        </div>
+        <div class="card-value-pill">5</div>
+      </div>
+      <div class="card-desc">
+        Üst üste <strong>5 eval adımında</strong> <code>eval_loss</code> en az <code>1e-4</code> iyileşmezse eğitim otomatik durdurulur. Gereksiz epoch harcamayı önler.
+      </div>
+      <div class="code-block">
+<span class="d">eval_loss değişimi:</span>
+  Eval  1: 1.45 → <span class="h">iyileşti ✓</span>  (sayaç=0)
+  Eval  2: 1.32 → <span class="h">iyileşti ✓</span>  (sayaç=0)
+  Eval  3: 1.28 → <span class="h">iyileşti ✓</span>  (sayaç=0)
+  Eval  4: 1.29 → <span class="w">kötüleşti ⚠</span>  (sayaç=1)
+  Eval  5: 1.28 → <span class="w">değişmedi ⚠</span>  (sayaç=2)
+  Eval  6: 1.30 → <span class="w">kötüleşti ⚠</span>  (sayaç=3)
+  Eval  7: 1.31 → <span class="w">kötüleşti ⚠</span>  (sayaç=4)
+  Eval  8: 1.29 → <span class="w">kötüleşti ⚠</span>  (sayaç=5)
+           <span class="r">→ ERKEN DURDURMA! En iyi: Eval 3 ✓</span>
+      </div>
+      <div class="tags"><span class="tag t-spd">GPU Tasarrufu</span><span class="tag t-qlt">Overfitting</span></div>
+    </div>
+
+    <!-- LOGGING_STEPS -->
+    <div class="card card-blue">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">LOGGING_STEPS</div>
+          <div class="card-location">SFTConfig → logging_steps</div>
+        </div>
+        <div class="card-value-pill">10</div>
+      </div>
+      <div class="card-desc">
+        Her <strong>10 adımda</strong> loss, LR, gradient norm gibi metrikler hem terminale hem TensorBoard'a yazılır.
+      </div>
+      <div class="code-block">
+<span class="d">Çıktı örneği:</span>
+  {'loss': 1.432, 'learning_rate': 1.8e-4,
+   'epoch': 0.33, 'grad_norm': 0.45}
+
+<span class="d">TensorBoard izleme:</span>
+  <span class="h">tensorboard --logdir ./outputs/RUN_NAME/logs</span>
+      </div>
+      <div class="tags"><span class="tag t-opt">Monitoring</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 7. ORTAM DEĞİŞKENLERİ -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="ortam">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(251,191,36,0.1); color:#fbbf24; font-size:1.4rem;">🔐</div>
+    <div class="section-meta">
+      <div class="section-title">Ortam Değişkenleri</div>
+      <div class="section-subtitle">İşletim sistemi seviyesinde GPU ve süreç konfigürasyonu</div>
+    </div>
+  </div>
+
+  <div class="cards-grid two">
+
+    <div class="card card-yellow">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">PYTORCH_CUDA_ALLOC_CONF</div>
+          <div class="card-location">os.environ</div>
+        </div>
+        <div class="card-value-pill">expandable_segments:True</div>
+      </div>
+      <div class="card-desc">
+        CUDA bellek yönetim stratejisi. <strong>Expandable segments</strong>, CUDA'nın bellek bloklarını daha verimli tahsis etmesini sağlar.
+      </div>
+      <div class="code-block">
+<span class="d">Sorun: CUDA bellek parçalanması</span>
+  VRAM'de 4 GB boş var ama parçalı
+  → 3 GB'lık tahsis isteği BAŞARISIZ olur!
+  <span class="r">"CUDA out of memory" (ama dolmadı?!)</span>
+
+<span class="h">expandable_segments=True ile:</span>
+  CUDA segmentleri birleştirebilir
+  → parçalı belleği daha iyi kullanır
+  → OOM hatası azalır
+
+<span class="d">Uzun eğitimlerde (1000+ adım) kritik!</span>
+      </div>
+      <div class="tags"><span class="tag t-mem">OOM Önleme</span><span class="tag t-crit">Kritik</span></div>
+    </div>
+
+    <div class="card card-yellow">
+      <div class="card-header">
+        <div class="card-name-block">
+          <div class="card-name">TOKENIZERS_PARALLELISM</div>
+          <div class="card-location">os.environ</div>
+        </div>
+        <div class="card-value-pill">"false"</div>
+      </div>
+      <div class="card-desc">
+        HuggingFace tokenizer'ların arka planda paralel thread'ler başlatmasını engeller. Multiprocessing ortamında <strong>deadlock</strong> uyarısını giderir.
+      </div>
+      <div class="code-block">
+<span class="r">Kapalıyken (warning):</span>
+  "huggingface/tokenizers: The current process
+   just forked... forked tokenizers are not
+   supported. Disable parallelism"
+
+<span class="h">Kapalıyken:</span>
+  Bu uyarı bastırılır
+  Windows forked process'lerde güvenli çalışır
+  (hız farkı ihmal edilebilir)
+      </div>
+      <div class="tags"><span class="tag t-win">Windows</span><span class="tag t-stb">Stabilite</span></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 8. EĞİTİM AKIŞI -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="akis">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(248,113,113,0.1); color:#f87171; font-size:1.4rem;">🗺️</div>
+    <div class="section-meta">
+      <div class="section-title">Eğitim Pipeline Akışı</div>
+      <div class="section-subtitle">Parametrelerin birbiriyle ilişkisi ve çalışma sırası</div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:var(--border);">
+    <div class="flow">
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(52,211,153,0.15);color:var(--green);">1</div>
+        <div class="flow-content">
+          <div class="flow-title">Veri Yükleme & Temizlik</div>
+          <div class="flow-sub">CSV_PATH → Score ≥ SCORE_MIN filtre → len > 10 filtre → kopya kaldır → Dataset</div>
+        </div>
+      </div>
+      <div class="flow-line"></div>
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(34,211,238,0.15);color:var(--cyan);">2</div>
+        <div class="flow-content">
+          <div class="flow-title">Tokenizer & Format</div>
+          <div class="flow-sub">MODEL_ID tokenizer → padding_side=right → Gemma chat template → "text" sütunu → %98 train / %2 eval split (SEED ile)</div>
+        </div>
+      </div>
+      <div class="flow-line"></div>
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(251,146,60,0.15);color:var(--orange);">3</div>
+        <div class="flow-content">
+          <div class="flow-title">Model Yükleme (4-bit QLoRA)</div>
+          <div class="flow-sub">MODEL_ID + NF4 + double_quant → ~5 GB VRAM → gradient_checkpointing → prepare_model_for_kbit_training</div>
+        </div>
+      </div>
+      <div class="flow-line"></div>
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(167,139,250,0.15);color:var(--purple);">4</div>
+        <div class="flow-content">
+          <div class="flow-title">LoRA Adaptör Ekleme</div>
+          <div class="flow-sub">r=16, alpha=32, 7 modül → ~50M eğitilebilir param → gaussian init → model.train()</div>
+        </div>
+      </div>
+      <div class="flow-line"></div>
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(244,114,182,0.15);color:var(--pink);">5</div>
+        <div class="flow-content">
+          <div class="flow-title">Eğitim Döngüsü</div>
+          <div class="flow-sub">batch(1) × 16 adım birikimi = efektif 16 → loss → backward → grad_clip(1.0) → paged_adamw_8bit → cosine LR (warmup %5)</div>
+        </div>
+      </div>
+      <div class="flow-line"></div>
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(34,211,238,0.15);color:var(--cyan);">6</div>
+        <div class="flow-content">
+          <div class="flow-title">Her 50 Adımda Eval</div>
+          <div class="flow-sub">eval_ds üzerinde eval_loss hesapla → en iyi checkpoint belirle → 5 kez iyileşmezse EARLY_STOP</div>
+        </div>
+      </div>
+      <div class="flow-line"></div>
+
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(52,211,153,0.15);color:var(--green);">7</div>
+        <div class="flow-content">
+          <div class="flow-title">Kaydetme</div>
+          <div class="flow-sub">En iyi checkpoint → adapter_model.safetensors + tokenizer → train_results.json + trainer_state.json</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- 9. HIZLI REFERANS -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="section" id="hizli">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(148,163,184,0.1); color:#94a3b8; font-size:1.4rem;">⚙️</div>
+    <div class="section-meta">
+      <div class="section-title">Donanıma Göre Hızlı Referans</div>
+      <div class="section-subtitle">GPU sınıfına göre önerilen parametre kombinasyonları</div>
+    </div>
+  </div>
+
+  <div class="card" style="overflow-x:auto;">
+    <table class="ctable" style="min-width:600px;">
+      <tr>
+        <th>Parametre</th>
+        <th style="color:#f87171">RTX 3090 (24 GB)</th>
+        <th style="color:#fbbf24">RTX 4090 (24 GB)</th>
+        <th style="color:#34d399">A100 (40 GB)</th>
+        <th style="color:#a78bfa">Mevcut Ayar</th>
+      </tr>
+      <tr><td><code>LOAD_4BIT</code></td><td>True</td><td>True</td><td>False</td><td style="color:var(--green)">True ✓</td></tr>
+      <tr><td><code>USE_BF16</code></td><td>False</td><td>False</td><td>True</td><td style="color:var(--green)">False ✓</td></tr>
+      <tr><td><code>MAX_SEQ_LEN</code></td><td>1024</td><td>2048</td><td>4096</td><td style="color:var(--yellow)">512 (güvenli)</td></tr>
+      <tr><td><code>BATCH_SIZE</code></td><td>2</td><td>4</td><td>8</td><td style="color:var(--green)">1 ✓</td></tr>
+      <tr><td><code>GRAD_ACCUM</code></td><td>8</td><td>4</td><td>2</td><td style="color:var(--green)">16 ✓</td></tr>
+      <tr><td><code>LORA_R</code></td><td>32</td><td>64</td><td>128</td><td style="color:var(--yellow)">16 (yeterli)</td></tr>
+      <tr><td><code>LORA_ALPHA</code></td><td>64</td><td>128</td><td>256</td><td style="color:var(--green)">32 ✓</td></tr>
+      <tr><td><code>LR</code></td><td>2e-4</td><td>2e-4</td><td>1e-4</td><td style="color:var(--green)">2e-4 ✓</td></tr>
+      <tr><td><code>attn_impl</code></td><td>eager</td><td>eager</td><td>flash_attn_2</td><td style="color:var(--green)">eager ✓</td></tr>
+    </table>
+  </div>
+
+  <div class="info-box blue" style="margin-top:16px; font-size:0.84rem;">
+    <strong>Altın Kural:</strong> BATCH_SIZE × GRAD_ACCUM = sabit tut (= 16). Donanım güçlendikçe BATCH_SIZE artır, GRAD_ACCUM azalt. Efektif batch büyüklüğü değişmesin.
+  </div>
+
+</section>
+
+</main>
+</div>
+
+<script>
+// Active nav item on scroll
+const sections = document.querySelectorAll('section[id]');
+const navItems = document.querySelectorAll('.nav-item');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
